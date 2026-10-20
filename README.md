@@ -27,15 +27,18 @@
 ## Як запустити
 
 Просто відкрийте `index.html` у браузері — все, крім YouTube, працює й так.
-Для YouTube потрібна адреса `http(s)://`: GitHub Pages або локальний сервер у папці репозиторію:
+Для YouTube потрібна адреса `http(s)://`: GitHub Pages або локальний сервер у цій папці:
 
 ```bash
 python -m http.server 8000
 ```
 
-і відкрийте `http://localhost:8000/menuisier/`.
+і відкрийте `http://localhost:8000/`.
 
-На GitHub Pages застосунок буде за адресою `https://ВАШ-ЛОГІН.github.io/НАЗВА-РЕПОЗИТОРІЮ/menuisier/`.
+## Як викласти на GitHub Pages
+
+На сторінці репозиторію: **Settings → Pages** → *Source: Deploy from a branch*, **Branch: main**, папка **/ (root)** → **Save**.
+За 1–2 хвилини застосунок буде за адресою `https://ВАШ-ЛОГІН.github.io/НАЗВА-РЕПОЗИТОРІЮ/`.
 
 ## Озвучка
 
