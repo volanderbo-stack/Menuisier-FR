@@ -1,0 +1,17 @@
+{
+  "name": "Menuisier FR — французька для столяра",
+  "short_name": "Menuisier FR",
+  "description": "Тренажер французької A1–A2 для столяра: словник з фото, відео-самопрезентації, діалоги на роботі, числа і розміри.",
+  "lang": "uk",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f2ec",
+  "theme_color": "#b8622a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

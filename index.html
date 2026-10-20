@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Menuisier FR — французька для столяра</title>
 <meta name="description" content="Тренажер французької A1–A2 для столяра: словник з фото, самопрезентація з відео, діалоги на роботі, числа і розміри.">
+<!-- Встановлення як застосунок (PWA): маніфест, іконки -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Menuisier FR">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f5f2ec" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23b8622a'/%3E%3Cpath d='M14 44 44 14l6 6-30 30z' fill='%23f6d9b8'/%3E%3Cpath d='M38 14h12v8H38z' fill='%23333'/%3E%3C/svg%3E">
@@ -99,6 +106,9 @@ p { margin: 0 0 .75em; }
   background: var(--card); border: 1px solid var(--line); font-size: .85rem; white-space: nowrap; text-decoration: none;
 }
 .chip b { color: var(--accent); }
+.install-chip { border-color: var(--accent); font-weight: 650; }
+.install-chip[hidden] { display: none; }
+@media (max-width: 420px) { .install-chip .inst-label { display: none; } }
 
 /* ---------- Основний контейнер ---------- */
 main { max-width: 780px; margin: 0 auto; padding: 16px; }
@@ -360,6 +370,7 @@ details.card summary { cursor: pointer; font-weight: 650; }
     <span>Menuisier FR</span>
   </a>
   <span class="spacer"></span>
+  <button class="chip install-chip" type="button" id="installBtn" data-act="install" aria-label="Встановити застосунок" hidden>⬇️ <span class="inst-label">Встановити</span></button>
   <a class="chip" href="#/dict" id="wordsChip" title="Вивчено слів">📘 <b id="wordsLearned">0</b>/<span id="wordsTotal">0</span></a>
 </header>
 
@@ -1811,6 +1822,10 @@ function viewSettings() {
       <div class="seg-ctl">${[['auto', 'Авто'], ['light', 'Світла'], ['dark', 'Темна']].map(([k, l]) => `<button data-act="setTheme" data-v="${k}" class="${(S.settings.theme || 'auto') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
     </div>
     <div class="card stack">
+      <h3>📲 Встановити як застосунок</h3>
+      ${installHelpHTML()}
+    </div>
+    <div class="card stack">
       <h3>💾 Прогрес</h3>
       <p class="small muted">Дані зберігаються тільки в цьому браузері. Зробіть копію, щоб перенести їх на інший пристрій.</p>
       <div class="row"><button class="btn" data-act="export">Зберегти копію у файл</button><label class="btn">Відновити з файлу<input type="file" accept=".json,application/json" id="importFile" hidden></label></div>
@@ -2586,6 +2601,36 @@ document.addEventListener('keydown', (e) => {
   if (e.key === ' ' && player && player.toggle && !/INPUT|TEXTAREA|SELECT|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); player.toggle(); }
 });
 window.addEventListener('hashchange', route);
+
+/* Встановлення як застосунок (PWA): іконка на головному екрані, робота без інтернету */
+let installEvent = null;
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function updateInstallUI() {
+  const b = $('#installBtn');
+  if (b) b.hidden = isStandalone() || !(installEvent || isIOS());
+}
+function installHelpHTML() {
+  if (isStandalone()) return '<p class="note">✓ Ви вже користуєтесь встановленим застосунком.</p>';
+  if (location.protocol === 'file:') return '<p class="small muted">Встановити можна лише з сайту (GitHub Pages), а не з файлу на комп’ютері.</p>';
+  return `${installEvent ? '<button class="btn primary" data-act="install">⬇️ Встановити застосунок</button>' : ''}
+    <p class="small muted" style="margin:0">Після встановлення застосунок відкривається з іконки, як звичайна програма, і працює без інтернету (крім фото та YouTube).</p>
+    <div class="small"><b>Android (Chrome):</b> меню ⋮ → «Встановити застосунок» або «Додати на головний екран».</div>
+    <div class="small"><b>iPhone / iPad (Safari):</b> кнопка «Поділитися» ⬆️ → «На початковий екран».</div>
+    <div class="small"><b>Комп’ютер (Chrome, Edge):</b> значок встановлення ⊕ праворуч в адресному рядку.</div>`;
+}
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvent = e; updateInstallUI(); if (location.hash === '#/settings') viewSettings(); });
+window.addEventListener('appinstalled', () => { installEvent = null; updateInstallUI(); toast('Застосунок встановлено 🎉'); });
+ACT.install = async () => {
+  if (!installEvent) { location.hash = '#/settings'; return; }
+  installEvent.prompt();
+  try { await installEvent.userChoice; } catch (e) {}
+  installEvent = null; updateInstallUI();
+  if (location.hash === '#/settings') viewSettings();
+};
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+updateInstallUI();
 applyTheme();
 TTS.init();
 updateHeader();
